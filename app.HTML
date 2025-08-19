@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เกมทายธาตุเคมี - Element Quiz Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .game-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1.2em;
+            margin-bottom: 30px;
+        }
+
+        .start-screen {
+            display: block;
+        }
+
+        .game-screen, .result-screen {
+            display: none;
+        }
+
+        .element-symbol {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 4em;
+            font-weight: bold;
+            width: 120px;
+            height: 120px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 30px auto;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+            transform: perspective(1000px) rotateX(10deg);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: perspective(1000px) rotateX(10deg) translateY(0px); }
+            50% { transform: perspective(1000px) rotateX(10deg) translateY(-10px); }
+        }
+
+        .question-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            border-left: 5px solid #667eea;
+        }
+
+        .progress-bar {
+            background: #e0e0e0;
+            height: 10px;
+            border-radius: 5px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            height: 100%;
+            transition: width 0.5s ease;
+        }
+
+        .input-group {
+            margin: 25px 0;
+        }
+
+        .input-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #333;
+            font-size: 1.1em;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 12px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0px);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #757575, #9E9E9E);
+        }
+
+        .answer-feedback {
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 1.1em;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .correct {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+
+        .incorrect {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+        }
+
+        .score-display {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .score-item {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            margin: 5px;
+            min-width: 120px;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .score-item h3 {
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+
+        .final-score {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 20px;
+            margin: 30px 0;
+            font-size: 1.5em;
+            box-shadow: 0 10px 30px rgba(76, 175, 80, 0.3);
+        }
+
+        .settings {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            border-left: 5px solid #667eea;
+        }
+
+        .settings h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .settings label {
+            display: block;
+            margin: 10px 0;
+            color: #666;
+        }
+
+        .settings select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+
+        .emoji {
+            font-size: 1.5em;
+            margin: 0 5px;
+        }
+
+        @media (max-width: 600px) {
+            .game-container {
+                padding: 20px;
+                margin: 10px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            .element-symbol {
+                width: 100px;
+                height: 100px;
+                font-size: 3em;
+            }
+
+            .score-display {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <!-- Start Screen -->
+        <div class="start-screen" id="startScreen">
+            <h1>🧪 เกมทายธาตุเคมี</h1>
+            <p class="subtitle">ทดสอบความรู้เรื่องตารางธาตุ</p>
+            
+            <div class="settings">
+                <h3>⚙️ ตั้งค่าเกม</h3>
+                <label for="rounds">จำนวนข้อ:</label>
+                <select id="rounds">
+                    <option value="10">10 ข้อ</option>
+                    <option value="20" selected>20 ข้อ</option>
+                    <option value="30">30 ข้อ</option>
+                    <option value="40">40 ข้อ (ธาตุทั้งหมด)</option>
+                </select>
+            </div>
+            
+            <button class="btn" onclick="startGame()">🎮 เริ่มเกม</button>
+        </div>
+
+        <!-- Game Screen -->
+        <div class="game-screen" id="gameScreen">
+            <div class="question-info">
+                <span class="emoji">🔍</span>
+                <strong>ข้อที่ <span id="currentQuestion">1</span> จาก <span id="totalQuestions">20</span></strong>
+            </div>
+
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressBar"></div>
+            </div>
+
+            <div class="element-symbol" id="elementSymbol">H</div>
+
+            <div class="input-group">
+                <label for="elementName">📝 ชื่อธาตุ (ไทยหรืออังกฤษ):</label>
+                <input type="text" id="elementName" placeholder="เช่น ไฮโดรเจน หรือ Hydrogen">
+            </div>
+
+            <div class="input-group">
+                <label for="atomicNumber">🔢 เลขอะตอม:</label>
+                <input type="number" id="atomicNumber" placeholder="เช่น 1">
+            </div>
+
+            <button class="btn" onclick="submitAnswer()">✅ ตอบ</button>
+            <button class="btn btn-secondary" onclick="skipQuestion()">⏭️ ข้าม</button>
+
+            <div class="answer-feedback" id="feedback" style="display: none;"></div>
+
+            <div class="score-display">
+                <div class="score-item">
+                    <h3 id="nameScore">0</h3>
+                    <p>ชื่อถูก</p>
+                </div>
+                <div class="score-item">
+                    <h3 id="atomicScore">0</h3>
+                    <p>เลขอะตอมถูก</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Result Screen -->
+        <div class="result-screen" id="resultScreen">
+            <h1>🏆 ผลการทำแบบทดสอบ</h1>
+            
+            <div class="final-score" id="finalScore">
+                <div class="emoji">🎉</div>
+                <h2>คะแนนรวม: <span id="totalScore">0</span>/<span id="maxScore">40</span></h2>
+                <p id="scoreMessage">เยี่ยมมาก!</p>
+            </div>
+
+            <div class="score-display">
+                <div class="score-item">
+                    <h3 id="finalNameScore">0</h3>
+                    <p>ชื่อธาตุถูก</p>
+                </div>
+                <div class="score-item">
+                    <h3 id="finalAtomicScore">0</h3>
+                    <p>เลขอะตอมถูก</p>
+                </div>
+            </div>
+
+            <button class="btn" onclick="restartGame()">🔄 เล่นอีกครั้ง</button>
+            <button class="btn btn-secondary" onclick="backToStart()">🏠 กลับหน้าหลัก</button>
+        </div>
+    </div>
+
+    <script>
+        const elements = {
+            "H":  ["Hydrogen", "ไฮโดรเจน", 1],
+            "He": ["Helium", "ฮีเลียม", 2],
+            "Li": ["Lithium", "ลิเทียม", 3],
+            "Be": ["Beryllium", "เบริลเลียม", 4],
+            "B":  ["Boron", "โบรอน", 5],
+            "C":  ["Carbon", "คาร์บอน", 6],
+            "N":  ["Nitrogen", "ไนโตรเจน", 7],
+            "O":  ["Oxygen", "ออกซิเจน", 8],
+            "F":  ["Fluorine", "ฟลูออรีน", 9],
+            "Ne": ["Neon", "นีออน", 10],
+            "Na": ["Sodium", "โซเดียม", 11],
+            "Mg": ["Magnesium", "แมกนีเซียม", 12],
+            "Al": ["Aluminium", "อะลูมิเนียม", 13],
+            "Si": ["Silicon", "ซิลิคอน", 14],
+            "P":  ["Phosphorus", "ฟอสฟอรัส", 15],
+            "S":  ["Sulfur", "ซัลเฟอร์", 16],
+            "Cl": ["Chlorine", "คลอรีน", 17],
+            "Ar": ["Argon", "อาร์กอน", 18],
+            "K":  ["Potassium", "โพแทสเซียม", 19],
+            "Ca": ["Calcium", "แคลเซียม", 20],
+            "Sc": ["Scandium", "สแกนเดียม", 21],
+            "Ti": ["Titanium", "ไทเทเนียม", 22],
+            "V":  ["Vanadium", "วาเนเดียม", 23],
+            "Cr": ["Chromium", "โครเมียม", 24],
+            "Mn": ["Manganese", "แมงกานีส", 25],
+            "Fe": ["Iron", "เหล็ก", 26],
+            "Co": ["Cobalt", "โคบอลต์", 27],
+            "Ni": ["Nickel", "นิกเกิล", 28],
+            "Cu": ["Copper", "ทองแดง", 29],
+            "Zn": ["Zinc", "สังกะสี", 30],
+            "Ga": ["Gallium", "แกลเลียม", 31],
+            "Ge": ["Germanium", "เจอร์เมเนียม", 32],
+            "As": ["Arsenic","อาร์เซนิก", 33],
+            "Se": ["Selenium", "ซีลีเนียม", 34],
+            "Br": ["Bromine", "โบรมีน", 35],
+            "Kr": ["Krypton", "คริปทอน", 36],
+            "Rb": ["Rubidium", "รูบิเดียม", 37],
+            "Sr": ["Strontium", "สทรอนเชียม", 38],
+            "Y":  ["Yttrium", "อิตเทรียม", 39],
+            "Zr": ["Zirconium", "เซอร์โคเนียม", 40]
+        };
+
+        let gameState = {
+            currentQuestion: 1,
+            totalQuestions: 20,
+            nameScore: 0,
+            atomicScore: 0,
+            currentElement: null,
+            usedElements: [],
+            answeredCurrentQuestion: false
+        };
+
+        function startGame() {
+            gameState.totalQuestions = parseInt(document.getElementById('rounds').value);
+            gameState.currentQuestion = 1;
+            gameState.nameScore = 0;
+            gameState.atomicScore = 0;
+            gameState.usedElements = [];
+            
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('gameScreen').style.display = 'block';
+            document.getElementById('totalQuestions').textContent = gameState.totalQuestions;
+            
+            nextQuestion();
+        }
+
+        function nextQuestion() {
+            if (gameState.currentQuestion > gameState.totalQuestions) {
+                showResults();
+                return;
+            }
+
+            gameState.answeredCurrentQuestion = false;
+            document.getElementById('feedback').style.display = 'none';
+            
+            // Select random element
+            const elementSymbols = Object.keys(elements);
+            let randomSymbol;
+            
+            // Ensure no repeats
+            if (gameState.usedElements.length >= elementSymbols.length) {
+                gameState.usedElements = [];
+            }
+            
+            do {
+                randomSymbol = elementSymbols[Math.floor(Math.random() * elementSymbols.length)];
+            } while (gameState.usedElements.includes(randomSymbol));
+            
+            gameState.usedElements.push(randomSymbol);
+            gameState.currentElement = {
+                symbol: randomSymbol,
+                nameEn: elements[randomSymbol][0],
+                nameTh: elements[randomSymbol][1],
+                atomicNumber: elements[randomSymbol][2]
+            };
+
+            // Update UI
+            document.getElementById('currentQuestion').textContent = gameState.currentQuestion;
+            document.getElementById('elementSymbol').textContent = randomSymbol;
+            document.getElementById('elementName').value = '';
+            document.getElementById('atomicNumber').value = '';
+            document.getElementById('nameScore').textContent = gameState.nameScore;
+            document.getElementById('atomicScore').textContent = gameState.atomicScore;
+            
+            // Update progress bar
+            const progress = ((gameState.currentQuestion - 1) / gameState.totalQuestions) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+        }
+
+        function submitAnswer() {
+            if (gameState.answeredCurrentQuestion) {
+                gameState.currentQuestion++;
+                nextQuestion();
+                return;
+            }
+
+            const userNameInput = document.getElementById('elementName').value.trim().toLowerCase();
+            const userAtomicInput = document.getElementById('atomicNumber').value.trim();
+
+            const correctName = userNameInput === gameState.currentElement.nameEn.toLowerCase() || 
+                               userNameInput === gameState.currentElement.nameTh.toLowerCase();
+            const correctAtomic = userAtomicInput === gameState.currentElement.atomicNumber.toString();
+
+            if (correctName) gameState.nameScore++;
+            if (correctAtomic) gameState.atomicScore++;
+
+            // Show feedback
+            let feedbackHTML = `
+                <div class="emoji">📢</div>
+                <strong>เฉลย:</strong><br>
+                ธาตุ ${gameState.currentElement.symbol} คือ ${gameState.currentElement.nameTh} (${gameState.currentElement.nameEn}) เลขอะตอม ${gameState.currentElement.atomicNumber}<br><br>
+                <div class="emoji">🎯</div>
+                <strong>ผลลัพธ์:</strong><br>
+            `;
+
+            if (correctName) {
+                feedbackHTML += `ชื่อธาตุ: ✅ ถูกต้อง 🎉 ดีมาก!<br>`;
+            } else {
+                feedbackHTML += `ชื่อธาตุ: ❌ ไม่ถูก 😅 เกือบจะถูกแล้ว อีกนิดเดียว!<br>`;
+            }
+
+            if (correctAtomic) {
+                feedbackHTML += `เลขอะตอม: ✅ ถูกต้อง 🎉 เยี่ยมมาก!`;
+            } else {
+                feedbackHTML += `เลขอะตอม: ❌ ไม่ถูก 😅 เกือบจะถูกแล้ว อีกนิดเดียว!`;
+            }
+
+            const feedbackDiv = document.getElementById('feedback');
+            feedbackDiv.innerHTML = feedbackHTML;
+            feedbackDiv.className = 'answer-feedback ' + (correctName || correctAtomic ? 'correct' : 'incorrect');
+            feedbackDiv.style.display = 'block';
+
+            gameState.answeredCurrentQuestion = true;
+            
+            // Update button text
+            const submitBtn = document.querySelector('.btn');
+            submitBtn.innerHTML = gameState.currentQuestion < gameState.totalQuestions ? '➡️ ข้อถัดไป' : '🏁 เสร็จสิ้น';
+        }
+
+        function skipQuestion() {
+            if (gameState.answeredCurrentQuestion) {
+                gameState.currentQuestion++;
+                nextQuestion();
+                return;
+            }
+
+            // Show answer and move to next
+            const feedbackDiv = document.getElementById('feedback');
+            feedbackDiv.innerHTML = `
+                <div class="emoji">📢</div>
+                <strong>เฉลย:</strong><br>
+                ธาตุ ${gameState.currentElement.symbol} คือ ${gameState.currentElement.nameTh} (${gameState.currentElement.nameEn}) เลขอะตอม ${gameState.currentElement.atomicNumber}
+            `;
+            feedbackDiv.className = 'answer-feedback incorrect';
+            feedbackDiv.style.display = 'block';
+
+            gameState.answeredCurrentQuestion = true;
+            
+            // Update button text
+            const submitBtn = document.querySelector('.btn');
+            submitBtn.innerHTML = gameState.currentQuestion < gameState.totalQuestions ? '➡️ ข้อถัดไป' : '🏁 เสร็จสิ้น';
+        }
+
+        function showResults() {
+            document.getElementById('gameScreen').style.display = 'none';
+            document.getElementById('resultScreen').style.display = 'block';
+
+            const totalScore = gameState.nameScore + gameState.atomicScore;
+            const maxScore = gameState.totalQuestions * 2;
+            const percentage = Math.round((totalScore / maxScore) * 100);
+
+            document.getElementById('totalScore').textContent = totalScore;
+            document.getElementById('maxScore').textContent = maxScore;
+            document.getElementById('finalNameScore').textContent = gameState.nameScore;
+            document.getElementById('finalAtomicScore').textContent = gameState.atomicScore;
+
+            let message = '';
+            if (percentage >= 90) {
+                message = '🏆 เยี่ยมยอด! คุณเป็นผู้เชี่ยวชาญด้านเคมี!';
+            } else if (percentage >= 80) {
+                message = '🎉 ดีมาก! ความรู้เรื่องธาตุของคุณดีเลิศ!';
+            } else if (percentage >= 70) {
+                message = '👍 ดี! คุณมีพื้นฐานความรู้ที่ดี';
+            } else if (percentage >= 60) {
+                message = '😊 พอใช้ ควรทบทวนอีกนิด';
+            } else {
+                message = '📚 ควรศึกษาเพิ่มเติมนะครับ';
+            }
+
+            document.getElementById('scoreMessage').textContent = message;
+        }
+
+        function restartGame() {
+            gameState = {
+                currentQuestion: 1,
+                totalQuestions: 20,
+                nameScore: 0,
+                atomicScore: 0,
+                currentElement: null,
+                usedElements: [],
+                answeredCurrentQuestion: false
+            };
+            
+            document.getElementById('resultScreen').style.display = 'none';
+            document.getElementById('gameScreen').style.display = 'block';
+            document.getElementById('totalQuestions').textContent = gameState.totalQuestions;
+            
+            nextQuestion();
+        }
+
+        function backToStart() {
+            document.getElementById('resultScreen').style.display = 'none';
+            document.getElementById('startScreen').style.display = 'block';
+        }
+
+        // Handle Enter key
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && document.getElementById('gameScreen').style.display === 'block') {
+                submitAnswer();
+            }
+        });
+    </script>
+</body>
+</html>
